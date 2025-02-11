@@ -1,28 +1,55 @@
 const nano = require('nano')(`http://thomas:Voiture82@localhost:5984`);
-const dbName = 'livres';
-const db = nano.use(dbName);
+const db = nano.db.use('livres');
 
 module.exports = {
-
     async getAllBooks() {
-        const response = await db.list({ include_docs: true });
-        return response.rows.map(row => ({ id: row.id, ...row.doc }));
+        try {
+            const response = await db.list({ include_docs: true });
+            return response.rows.map(row => ({ id: row.id, ...row.doc }));
+        } catch (error) {
+            throw new Error(`Erreur lors de la récupération de tous les livres: ${error.message}`);
+        }
     },
 
     async getBookById(id) {
-
+        try {
+            const response = await db.get(id);
+            return response;
+        } catch (error) {
+            throw new Error(`Erreur lors de la récupération du livre: ${error.message}`);
+        }
     },
 
-    async addBook(req, res) {
-
+    async addBook(bookData) {
+        try {
+            const response = await db.insert(bookData);
+            return { id: response.id, ...bookData };
+        } catch (error) {
+            throw new Error(`Erreur lors de l'ajout du livre: ${error.message}`);
+        }
     },
 
-    async updateBook(req, res) {
-
+    async updateBook(id, bookData) {
+        try {
+            const existing = await db.get(id);
+            const updated = { ...existing, ...bookData };
+            const response = await db.insert(updated);
+            return response;
+        } catch (error) {
+            throw new Error(`Erreur lors de la modification du livre: ${error.message}`);
+        }
     },
 
-    async deleteBook(req, res) {
-
+    async deleteBook(id) {
+        try {
+            const existingBook = await db.get(id);
+            if (!existingBook) {
+                return null;
+            }
+            const response = await db.destroy(id, existingBook._rev);
+            return response;
+        } catch (error) {
+            throw new Error(`Erreur lors de la suppression du livre: ${error.message}`);
+        }
     }
-
-}
+};

@@ -1,5 +1,4 @@
 const express = require('express')
-const nano = require('nano')('http://thomas:Voiture82@localhost:5984');
 const app = express()
 const PORT = 3000
 
