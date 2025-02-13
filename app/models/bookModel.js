@@ -1,5 +1,5 @@
-const nano = require('nano')(`http://thomas:Voiture82@localhost:5984`);
-const db = nano.db.use('livres');
+const nano = require('nano')(process.env.COUCHDB_URL || `http://localhost:5984`);
+const db = nano.db.use(process.env.DBNAME);
 
 module.exports = {
     async getAllBooks() {
